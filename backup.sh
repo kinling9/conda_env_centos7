@@ -18,11 +18,11 @@ fi
 # Create host backup directory if it doesn't exist
 mkdir -p "$HOST_BACKUP_DIR"
 
-PACKAGE_TO_INSTALL="$1"
+INPUT_ARGS="$*"
 
-if [ -z "$PACKAGE_TO_INSTALL" ]; then
-    echo "Usage: ./backup.sh [package_name]"
-    echo "If no package name is provided, it will just restore and backup (snapshot)."
+if [ -z "$INPUT_ARGS" ]; then
+    echo "Usage: ./backup.sh [package_name|install_command]"
+    echo "If no arguments are provided, it will just restore and backup (snapshot)."
 fi
 
 # 2. Run the Docker container
@@ -38,9 +38,24 @@ CMD_STRING="$CMD_STRING && echo '--- Restoring State ---' && /usr/local/bin/rest
 # Step A.5: Refresh Snapshot (Fix for Tar Incremental on new inodes)
 CMD_STRING="$CMD_STRING && /usr/local/bin/refresh_snapshot.sh $ENV_NAME"
 
+# Logic to determine actual install command
+INSTALL_CMD=""
+if [ ! -z "$INPUT_ARGS" ]; then
+    # Get the first word of the arguments to check if it's a known command
+    FIRST_WORD=$(echo "$INPUT_ARGS" | awk '{print $1}')
+    
+    if [[ "$FIRST_WORD" == "pip" || "$FIRST_WORD" == "conda" || "$FIRST_WORD" == "mamba" ]]; then
+        # Assume user provided a full command
+        INSTALL_CMD="$INPUT_ARGS"
+    else
+        # Assume user provided package list, default to conda install
+        INSTALL_CMD="conda install -y $INPUT_ARGS"
+    fi
+fi
+
 # Step B: Install new package (if requested)
-if [ ! -z "$PACKAGE_TO_INSTALL" ]; then
-    CMD_STRING="$CMD_STRING && echo '--- Installing $PACKAGE_TO_INSTALL ---' && conda install -y $PACKAGE_TO_INSTALL"
+if [ ! -z "$INSTALL_CMD" ]; then
+    CMD_STRING="$CMD_STRING && echo '--- Installing: $INSTALL_CMD ---' && $INSTALL_CMD"
 fi
 
 # Step C: Pack incremental

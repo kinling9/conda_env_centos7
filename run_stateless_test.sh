@@ -17,5 +17,13 @@ rm -rf "$HOST_BACKUP_DIR"
 # We check if Level 2 is small.
 ./backup.sh numpy
 
+# 4. Multi-package Install (Implicit Conda)
+echo "Testing multi-package install (pytz six)..."
+./backup.sh pytz six
+
+# 5. Complex Install Command (Pip with flags)
+echo "Testing complex pip install..."
+./backup.sh pip install --no-cache-dir toml
+
 echo "=== Stateless Test Workflow Completed ==="
 ls -lh "$HOST_BACKUP_DIR"
