@@ -31,6 +31,9 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-${MINICONDA_VERSION}-Lin
     conda init bash && \
     conda config --add channels conda-forge && \
     conda config --set channel_priority strict
+RUN conda update -n base conda -y && \
+    conda install -n base conda-libmamba-solver -y && \
+    conda config --set solver libmamba
 
 # Copy packing script
 COPY pack_incremental.sh /usr/local/bin/pack_incremental.sh
