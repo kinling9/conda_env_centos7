@@ -11,7 +11,7 @@ OUTPUT_DIR="/opt/packed_updates"
 # Setup paths
 CONDA_BASE=$(conda info --base)
 ENV_PATH="$CONDA_BASE/envs/$ENV_NAME"
-SNAPSHOT_FILE="$OUTPUT_DIR/${ENV_NAME}_snapshot.snar"
+SNAPSHOT_FILE="/tmp/${ENV_NAME}_snapshot.snar"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 OUTPUT_TAR="$OUTPUT_DIR/${ENV_NAME}_update_${TIMESTAMP}.tar.gz"
 

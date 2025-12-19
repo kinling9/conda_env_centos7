@@ -35,11 +35,11 @@ RUN conda update -n base conda -y && \
     conda install -n base conda-libmamba-solver -y && \
     conda config --set solver libmamba
 
+# Create a conda environment
+RUN conda create -n test_env python=3.9 -y
+
 # Copy packing script
 COPY pack_incremental.sh /usr/local/bin/pack_incremental.sh
 COPY restore_env.sh /usr/local/bin/restore_env.sh
 COPY refresh_snapshot.sh /usr/local/bin/refresh_snapshot.sh
 RUN chmod +x /usr/local/bin/pack_incremental.sh /usr/local/bin/restore_env.sh /usr/local/bin/refresh_snapshot.sh
-
-# Create a conda environment
-RUN conda create -n test_env python=3.9 -y
