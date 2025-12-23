@@ -4,7 +4,7 @@
 IMAGE_NAME="conda-glibc217-env"
 HOST_BACKUP_DIR="./backup_output"
 CONTAINER_BACKUP_DIR="/opt/packed_updates"
-ENV_NAME="test_env"
+ENV_NAME="gcn_env"
 
 # 1. Build the Docker image
 echo "Building Docker image: $IMAGE_NAME"
@@ -43,7 +43,7 @@ INSTALL_CMD=""
 if [ ! -z "$INPUT_ARGS" ]; then
     # Get the first word of the arguments to check if it's a known command
     FIRST_WORD=$(echo "$INPUT_ARGS" | awk '{print $1}')
-    
+
     if [[ "$FIRST_WORD" == "pip" || "$FIRST_WORD" == "conda" || "$FIRST_WORD" == "mamba" ]]; then
         # Assume user provided a full command
         INSTALL_CMD="$INPUT_ARGS"
