@@ -33,6 +33,7 @@ echo "========================================"
 # If .snar file exists, tar will use it to find ONLY changed files.
 # If .snar file does NOT exist, tar will create it and pack EVERYTHING (Level 0 backup).
 
+# rm -rf $SNAPSHOT_FILE
 if [ ! -f "$SNAPSHOT_FILE" ]; then
     echo "⚠️  No snapshot found. This will be a FULL backup (Level 0)."
     echo "    Upload this full file to the server first to establish the base."

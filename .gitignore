@@ -1,1 +1,2 @@
 backup_output/*.tar.gz
+run_stateless_test.sh
