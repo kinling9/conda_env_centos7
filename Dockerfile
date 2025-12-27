@@ -46,10 +46,11 @@ ENV CXX=/opt/rh/devtoolset-11/root/usr/bin/g++
 RUN yum -y install bzip2 wget gmp-devel mpfr-devel libmpc-devel git
 
 # Install Miniconda
+ARG TARGET_CONDA_DIR=/root/miniconda3
 ENV MINICONDA_VERSION=py39_4.12.0
-ENV PATH="/root/miniconda3/bin:${PATH}"
+ENV PATH="${TARGET_CONDA_DIR}/bin:${PATH}"
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh -O miniconda.sh && \
-    bash miniconda.sh -b -p /root/miniconda3 && \
+    bash miniconda.sh -b -p "${TARGET_CONDA_DIR}" && \
     rm miniconda.sh && \
     conda init bash && \
     conda config --add channels conda-forge && \

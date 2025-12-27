@@ -5,10 +5,22 @@ IMAGE_NAME="conda-glibc217-env"
 HOST_BACKUP_DIR="./backup_output"
 CONTAINER_BACKUP_DIR="/opt/packed_updates"
 ENV_NAME="gcn_env"
+TARGET_CONDA_DIR="/root/miniconda3"
+
+# Parse optional arguments
+while [[ "$1" =~ ^--target-dir ]]; do
+    if [[ "$1" =~ ^--target-dir= ]]; then
+        TARGET_CONDA_DIR="${1#*=}"
+        shift
+    else
+        TARGET_CONDA_DIR="$2"
+        shift 2
+    fi
+done
 
 # 1. Build the Docker image
-echo "Building Docker image: $IMAGE_NAME"
-docker build -t "$IMAGE_NAME" .
+echo "Building Docker image: $IMAGE_NAME with TARGET_CONDA_DIR=$TARGET_CONDA_DIR"
+docker build --build-arg TARGET_CONDA_DIR="$TARGET_CONDA_DIR" -t "$IMAGE_NAME" .
 
 if [ $? -ne 0 ]; then
     echo "Docker build failed. Exiting."
@@ -30,7 +42,7 @@ fi
 echo "Running Docker container..."
 echo "Mounting: $(pwd)/$HOST_BACKUP_DIR -> $CONTAINER_BACKUP_DIR"
 
-CMD_STRING="source /root/miniconda3/etc/profile.d/conda.sh && conda activate $ENV_NAME"
+CMD_STRING="source $TARGET_CONDA_DIR/etc/profile.d/conda.sh && conda activate $ENV_NAME"
 
 # Step A: Restore from previous backups
 CMD_STRING="$CMD_STRING && echo '--- Restoring State ---' && /usr/local/bin/restore_env.sh $ENV_NAME"
