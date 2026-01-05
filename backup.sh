@@ -8,19 +8,49 @@ ENV_NAME="gcn_env"
 TARGET_CONDA_DIR="/root/miniconda3"
 
 # Parse optional arguments
-while [[ "$1" =~ ^--target-dir ]]; do
-    if [[ "$1" =~ ^--target-dir= ]]; then
-        TARGET_CONDA_DIR="${1#*=}"
-        shift
-    else
-        TARGET_CONDA_DIR="$2"
-        shift 2
-    fi
+RESET_FLAG=""
+ARGS=()
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --target-dir=*)
+            TARGET_CONDA_DIR="${1#*=}"
+            shift
+            ;;
+        --target-dir)
+            TARGET_CONDA_DIR="$2"
+            shift 2
+            ;;
+        --reset|--full)
+            RESET_FLAG="--reset"
+            shift
+            ;;
+        *)
+            ARGS+=("$1")
+            shift
+            ;;
+    esac
 done
 
+# Restore positional parameters for later use
+set -- "${ARGS[@]}"
+
+# Determine ENV_NAME based on TARGET_CONDA_DIR
+# If TARGET_CONDA_DIR is the default, we keep default ENV_NAME.
+# If user provided a custom path, we extract the basename as ENV_NAME.
+if [ "$TARGET_CONDA_DIR" != "/root/miniconda3" ]; then
+    ENV_NAME=$(basename "$TARGET_CONDA_DIR")
+fi
+
 # 1. Build the Docker image
-echo "Building Docker image: $IMAGE_NAME with TARGET_CONDA_DIR=$TARGET_CONDA_DIR"
-docker build --build-arg TARGET_CONDA_DIR="$TARGET_CONDA_DIR" -t "$IMAGE_NAME" .
+echo "Building Docker image: $IMAGE_NAME"
+echo "  - TARGET_CONDA_DIR: $TARGET_CONDA_DIR"
+echo "  - ENV_NAME:         $ENV_NAME"
+
+docker build \
+    --build-arg TARGET_CONDA_DIR="$TARGET_CONDA_DIR" \
+    --build-arg ENV_NAME="$ENV_NAME" \
+    -t "$IMAGE_NAME" .
 
 if [ $? -ne 0 ]; then
     echo "Docker build failed. Exiting."
@@ -32,8 +62,8 @@ mkdir -p "$HOST_BACKUP_DIR"
 
 INPUT_ARGS="$*"
 
-if [ -z "$INPUT_ARGS" ]; then
-    echo "Usage: ./backup.sh [package_name|install_command]"
+if [ -z "$INPUT_ARGS" ] && [ -z "$RESET_FLAG" ]; then
+    echo "Usage: ./backup.sh [--target-dir=<dir>] [--reset] [package_name|install_command]"
     echo "If no arguments are provided, it will just restore and backup (snapshot)."
 fi
 
@@ -71,7 +101,7 @@ if [ ! -z "$INSTALL_CMD" ]; then
 fi
 
 # Step C: Pack incremental
-CMD_STRING="$CMD_STRING && echo '--- Packing Updates ---' && /usr/local/bin/pack_incremental.sh $ENV_NAME"
+CMD_STRING="$CMD_STRING && echo '--- Packing Updates ---' && /usr/local/bin/pack_incremental.sh $ENV_NAME $RESET_FLAG"
 
 docker run --rm \
     -v "$(pwd)/$HOST_BACKUP_DIR:$CONTAINER_BACKUP_DIR" \

@@ -70,7 +70,8 @@ ENV LD_LIBRARY_PATH="/usr/local/cuda-12.4/lib64"
 ENV MAX_JOBS=4
 
 # Create a conda environment
-RUN conda create -n gcn_env python=3.9 -y
+ARG ENV_NAME=gcn_env
+RUN conda create -n ${ENV_NAME} python=3.9 -y
 
 # Copy packing script
 COPY pack_incremental.sh /usr/local/bin/pack_incremental.sh
